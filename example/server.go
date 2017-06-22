@@ -39,7 +39,6 @@ func main() {
 			log.Println(err)
 			continue
 		}
-		log.Println(err)
 		client := prpc.NewClient(conn)
 		client.SetServer(serviceManager)
 		go client.Loop()

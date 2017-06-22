@@ -3,7 +3,6 @@ package prpc
 import (
 	"errors"
 	"io"
-	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -140,7 +139,6 @@ func (client *Client) Loop() {
 				}
 				continue
 			}
-			log.Println(header)
 			go service.call(client.server, sending, mtype, header, argv, replyv, client.client.codec)
 		}
 	}
