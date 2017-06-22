@@ -10,16 +10,12 @@ import (
 )
 
 type Client struct {
+	CallManager
 	server *ServiceManager
-	client *CallManager
 }
 
 func (client *Client) SetServer(server *ServiceManager) {
 	client.server = server
-}
-
-func (client *Client) Client() *CallManager {
-	return client.client
 }
 
 func NewClient(conn io.ReadWriteCloser) *Client {
@@ -29,8 +25,8 @@ func NewClient(conn io.ReadWriteCloser) *Client {
 
 func NewClientWithCodec(codec Codec) *Client {
 	client := &Client{
-		server: NewServiceManager(),
-		client: NewCallManager(codec),
+		*NewCallManager(codec),
+		NewServiceManager(),
 	}
 	return client
 }
@@ -42,7 +38,7 @@ func (client *Client) readRequest(req *Header) (service *service, mtype *methodT
 			return
 		}
 		// discard body
-		client.client.codec.ReadBody(nil)
+		client.codec.ReadBody(nil)
 		return
 	}
 
@@ -55,7 +51,7 @@ func (client *Client) readRequest(req *Header) (service *service, mtype *methodT
 		argIsValue = true
 	}
 	// argv guaranteed to be a pointer now.
-	if err = client.client.codec.ReadBody(argv.Interface()); err != nil {
+	if err = client.codec.ReadBody(argv.Interface()); err != nil {
 		return
 	}
 	if argIsValue {
@@ -96,31 +92,31 @@ func (client *Client) Loop() {
 	var header *Header
 	for err == nil {
 		header = &Header{}
-		err = client.client.codec.ReadHeader(header)
+		err = client.codec.ReadHeader(header)
 		if err != nil {
 			break
 		}
 		if header.IsResp {
 			seq := header.Seq
-			client.client.mutex.Lock()
-			call := client.client.pending[seq]
-			delete(client.client.pending, seq)
-			client.client.mutex.Unlock()
+			client.mutex.Lock()
+			call := client.pending[seq]
+			delete(client.pending, seq)
+			client.mutex.Unlock()
 			switch {
 			case call == nil:
-				err = client.client.codec.ReadBody(nil)
+				err = client.codec.ReadBody(nil)
 				if err != nil {
 					err = errors.New("reading error body: " + err.Error())
 				}
 			case header.Error != "":
 				call.Error = ServerError(header.Error)
-				err = client.client.codec.ReadBody(nil)
+				err = client.codec.ReadBody(nil)
 				if err != nil {
 					err = errors.New("reading error body: " + err.Error())
 				}
 				call.done()
 			default:
-				err = client.client.codec.ReadBody(call.Reply)
+				err = client.codec.ReadBody(call.Reply)
 				if err != nil {
 					call.Error = errors.New("reading body " + err.Error())
 				}
@@ -136,20 +132,20 @@ func (client *Client) Loop() {
 				}
 				// send a response if we actually managed to read a header.
 				if header != nil {
-					client.server.sendResponse(sending, header, nil, client.client.codec, err.Error())
+					client.server.sendResponse(sending, header, nil, client.codec, err.Error())
 					client.server.freeRequest(header)
 				}
 				break
 			}
-			go service.call(client.server, sending, mtype, header, argv, replyv, client.client.codec)
+			go service.call(client.server, sending, mtype, header, argv, replyv, client.codec)
 		}
 	}
 	log.Println(err)
 	// Terminate pending calls.
-	client.client.reqMutex.Lock()
-	client.client.mutex.Lock()
-	client.client.shutdown = true
-	closing := client.client.closing
+	client.reqMutex.Lock()
+	client.mutex.Lock()
+	client.shutdown = true
+	closing := client.closing
 	if err == io.EOF {
 		if closing {
 			err = ErrShutdown
@@ -157,10 +153,10 @@ func (client *Client) Loop() {
 			err = io.ErrUnexpectedEOF
 		}
 	}
-	for _, call := range client.client.pending {
+	for _, call := range client.pending {
 		call.Error = err
 		call.done()
 	}
-	client.client.mutex.Unlock()
-	client.client.reqMutex.Unlock()
+	client.mutex.Unlock()
+	client.reqMutex.Unlock()
 }

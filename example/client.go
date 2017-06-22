@@ -43,7 +43,7 @@ func main() {
 		req1.A = 8
 		req1.B = 8
 		reply1 := new(proto.ProtoReply)
-		err = client.Client().Call("Front.Mul", req1, reply1)
+		err = client.Call("Front.Mul", req1, reply1)
 		log.Println("error: ", err)
 		log.Println("call result: ", reply1.C)
 		time.Sleep(time.Second)

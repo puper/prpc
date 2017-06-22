@@ -25,6 +25,7 @@ func (t *Front) Auth(args *proto.AuthArgs, reply *proto.AuthReply) error {
 
 func (t *Front) Mul(args *proto.ProtoArgs, reply *proto.ProtoReply) error {
 	reply.C = args.A * args.B
+	time.Sleep(5 * time.Second)
 	return nil
 }
 
@@ -50,7 +51,7 @@ func main() {
 				req1.A = 3
 				req1.B = 3
 				reply1 := new(proto.ProtoReply)
-				err = client.Client().Call("Front.Mul", req1, reply1)
+				err = client.Call("Front.Mul", req1, reply1)
 				log.Println("error: ", err)
 				log.Println("call result: ", reply1.C)
 				time.Sleep(time.Second)
