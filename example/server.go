@@ -44,7 +44,7 @@ func main() {
 		client := prpc.NewClient(conn)
 		client.SetServer(serviceManager)
 		go client.Loop()
-		go func() {
+		go func(client *prpc.Client) {
 			for {
 				req1 := new(proto.ProtoArgs)
 				req1.A = 3
@@ -55,7 +55,7 @@ func main() {
 				log.Println("call result: ", reply1.C)
 				time.Sleep(time.Second)
 			}
-		}()
+		}(client)
 
 	}
 }
