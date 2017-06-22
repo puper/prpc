@@ -54,6 +54,7 @@ func main() {
 				log.Println("error: ", err)
 				log.Println("call result: ", reply1.C)
 				time.Sleep(time.Second)
+				log.Println(111)
 				if err != nil {
 					return
 				}

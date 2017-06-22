@@ -26,12 +26,13 @@ type Codec interface {
 }
 
 type protobufCodec struct {
-	mu     sync.Mutex
-	header pb.Header
-	enc    *Encoder
-	w      *bufio.Writer
-	dec    *Decoder
-	c      io.Closer
+	mu          sync.Mutex
+	header      pb.Header
+	writeHeader pb.Header
+	enc         *Encoder
+	w           *bufio.Writer
+	dec         *Decoder
+	c           io.Closer
 }
 
 func NewProtobufCodec(rwc io.ReadWriteCloser) Codec {
@@ -48,11 +49,11 @@ func NewProtobufCodec(rwc io.ReadWriteCloser) Codec {
 func (c *protobufCodec) Write(header *Header, body interface{}) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.header.IsResp = header.IsResp
-	c.header.Method = header.ServiceMethod
-	c.header.Seq = header.Seq
-	c.header.Error = header.Error
-	err := encode(c.enc, &c.header)
+	c.writeHeader.IsResp = header.IsResp
+	c.writeHeader.Method = header.ServiceMethod
+	c.writeHeader.Seq = header.Seq
+	c.writeHeader.Error = header.Error
+	err := encode(c.enc, &c.writeHeader)
 	if err != nil {
 		return err
 	}
