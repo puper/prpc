@@ -24,6 +24,7 @@ func (t *Front) Auth(args *proto.AuthArgs, reply *proto.AuthReply) error {
 }
 
 func (t *Front) Mul(args *proto.ProtoArgs, reply *proto.ProtoReply) error {
+	time.Sleep(time.Second * 1000)
 	reply.C = args.A * args.B
 	return nil
 }
