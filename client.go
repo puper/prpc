@@ -3,6 +3,7 @@ package prpc
 import (
 	"errors"
 	"io"
+	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -126,6 +127,7 @@ func (client *Client) Loop() {
 				call.done()
 			}
 		} else {
+			log.Println("header: ", header)
 			sending := new(sync.Mutex)
 			service, mtype, argv, replyv, keepReading, err := client.readRequest(header)
 			if err != nil {
@@ -142,6 +144,7 @@ func (client *Client) Loop() {
 			go service.call(client.server, sending, mtype, header, argv, replyv, client.client.codec)
 		}
 	}
+	log.Println(err)
 	// Terminate pending calls.
 	client.client.reqMutex.Lock()
 	client.client.mutex.Lock()
