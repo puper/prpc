@@ -1,0 +1,10 @@
+// protoc --gogofaster_out=. *.proto
+syntax = "proto3";
+package pb;
+
+message Header {
+	bool isResp = 1;
+	string method = 2;
+	uint64 seq = 3;
+	string error = 4;
+}
