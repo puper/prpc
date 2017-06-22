@@ -25,7 +25,6 @@ func (t *Front) Auth(args *proto.AuthArgs, reply *proto.AuthReply) error {
 
 func (t *Front) Mul(args *proto.ProtoArgs, reply *proto.ProtoReply) error {
 	reply.C = args.A * args.B
-	time.Sleep(5 * time.Second)
 	return nil
 }
 
@@ -55,7 +54,6 @@ func main() {
 				log.Println("error: ", err)
 				log.Println("call result: ", reply1.C)
 				time.Sleep(time.Second)
-				log.Println(111)
 				if err != nil {
 					return
 				}
