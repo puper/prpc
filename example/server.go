@@ -5,6 +5,8 @@ import (
 
 	"log"
 
+	"time"
+
 	"github.com/puper/prpc"
 	"github.com/puper/prpc/example/proto"
 )
@@ -42,11 +44,18 @@ func main() {
 		client := prpc.NewClient(conn)
 		client.SetServer(serviceManager)
 		go client.Loop()
-		req1 := new(proto.ProtoArgs)
-		req1.A = 3
-		req1.B = 3
-		reply1 := new(proto.ProtoReply)
-		err = client.Client().Call("Front.Mul", req1, reply1)
-		log.Println("call result: ", reply1.C)
+		go func() {
+			for {
+				req1 := new(proto.ProtoArgs)
+				req1.A = 3
+				req1.B = 3
+				reply1 := new(proto.ProtoReply)
+				err = client.Client().Call("Front.Mul", req1, reply1)
+				log.Println("error: ", err)
+				log.Println("call result: ", reply1.C)
+				time.Sleep(time.Second)
+			}
+		}()
+
 	}
 }

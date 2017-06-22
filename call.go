@@ -47,7 +47,6 @@ type Call struct {
 func (call *Call) done() {
 	select {
 	case call.Done <- call:
-		// ok
 	default:
 	}
 }
@@ -58,11 +57,12 @@ func (client *CallManager) send(call *Call) {
 
 	client.mutex.Lock()
 	if client.shutdown || client.closing {
-		call.Error = ErrShutdown
 		client.mutex.Unlock()
+		call.Error = ErrShutdown
 		call.done()
 		return
 	}
+	client.mutex.Unlock()
 	if call.IsNotify {
 		client.request.Seq = 0
 		client.request.ServiceMethod = call.ServiceMethod
@@ -72,6 +72,7 @@ func (client *CallManager) send(call *Call) {
 		}
 		call.done()
 	} else {
+		client.mutex.Lock()
 		client.seq++
 		seq := client.seq
 		client.pending[seq] = call

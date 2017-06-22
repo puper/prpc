@@ -134,10 +134,10 @@ func (client *Client) Loop() {
 				}
 				// send a response if we actually managed to read a header.
 				if header != nil {
-					//client.server.SendResponse(sending, header, invalidRequest, client.client.codec, err.Error())
-					//client.server.FreeRequest(header)
+					client.server.sendResponse(sending, header, nil, client.client.codec, err.Error())
+					client.server.freeRequest(header)
 				}
-				continue
+				break
 			}
 			go service.call(client.server, sending, mtype, header, argv, replyv, client.client.codec)
 		}

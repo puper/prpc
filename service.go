@@ -176,7 +176,7 @@ func (server *ServiceManager) sendResponse(sending *sync.Mutex, req *Header, rep
 	resp.ServiceMethod = req.ServiceMethod
 	if errmsg != "" {
 		resp.Error = errmsg
-		reply = invalidRequest
+		reply = nil
 	}
 	resp.Seq = req.Seq
 	sending.Lock()
